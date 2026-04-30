@@ -1,10 +1,6 @@
-//components/ShowCourseComponent.js
 import React from 'react';
-import './tshirt.jpg'
 
-function ShowCourseComponent({ courses, 
-	filterCourseFunction, 
-	addCourseToCartFunction }) {
+function ShowCourseComponent({ courses, filterCourseFunction, addCourseToCartFunction }) {
 	return (
 		<div className="product-list">
 			{filterCourseFunction.length === 0 ? (
@@ -16,12 +12,13 @@ function ShowCourseComponent({ courses,
 					<div className="product" key={product.id}>
 						<img src={product.image} alt={product.name} />
 						<h2>{product.name}</h2>
-						<p>Price: ₹{product.price}</p>
+						{product.description && <p className="desc">{product.description}</p>}
+						<p className="price">₹{product.price}</p>
 						<button
 							className="add-to-cart-button"
 							onClick={() => addCourseToCartFunction(product)}
 						>
-							Add to Shopping Cart
+							Add to Cart
 						</button>
 					</div>
 				))

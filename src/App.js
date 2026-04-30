@@ -1,7 +1,6 @@
 import './App.css';
-import axios from 'axios';
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Route, Routes, Link, Navigate } from 'react-router-dom';
 import tshirtImage from './components/tshirt.jpg';
 import Bag from './components/Bag.jpg';
 import shoes from './components/shoes.jpg';
@@ -13,63 +12,69 @@ import LoginComponent from './components/LoginComponent';
 function App() {
     const [responseId, setResponseId] = useState("");
     const [courses] = useState([
-        { id: 1, name: 'T-shirt', price: 499, image: tshirtImage },
-        { id: 2, name: 'Bag', price: 699, image: Bag },
-        { id: 3, name: 'Shoes', price: 799, image: shoes }
+        { id: 1, name: 'Premium T-shirt', price: 499, image: tshirtImage, description: 'Comfortable premium cotton t-shirt.' },
+        { id: 2, name: 'Travel Bag', price: 899, image: Bag, description: 'Spacious and durable travel backpack.' },
+        { id: 3, name: 'Running Shoes', price: 1299, image: shoes, description: 'Performance running shoes with great grip.' }
     ]);
-    const [cartCourses, setCartCourses] = useState([]);
+    
+    const [cartCourses, setCartCourses] = useState(() => {
+        const savedCart = localStorage.getItem('shopping_cart');
+        return savedCart ? JSON.parse(savedCart) : [];
+    });
+
     const [searchCourse, setSearchCourse] = useState("");
+    
+    const [loggedUser, setLoggedUser] = useState(() => {
+        const savedUser = localStorage.getItem('currentUser');
+        return savedUser ? JSON.parse(savedUser) : null;
+    });
+
+    useEffect(() => {
+        localStorage.setItem('shopping_cart', JSON.stringify(cartCourses));
+    }, [cartCourses]);
+
+    const handleLogout = () => {
+        localStorage.removeItem('currentUser');
+        setLoggedUser(null);
+    };
 
     const loadScript = (src) => {
         return new Promise((resolve) => {
             const script = document.createElement("script");
             script.src = src;
             script.onload = () => resolve(true);
-            script.onerror = () => {
-                console.error("Error loading Razorpay script");
-                resolve(false);
-            };
+            script.onerror = () => resolve(false);
             document.body.appendChild(script);
         });
     };
 
     const createRazorpayOrder = async (amount) => {
-        const data = JSON.stringify({ amount: amount * 100, currency: "INR" });
-
-        try {
-            const response = await axios.post("http://localhost:5000/orders", data, {
-                headers: { 'Content-Type': 'application/json' }
-            });
-            handleRazorpayScreen(response.data.amount);
-        } catch (error) {
-            console.error("Error creating Razorpay order:", error);
-        }
+        handleRazorpayScreen(amount);
     };
 
     const handleRazorpayScreen = async (amount) => {
         const res = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
         if (!res) {
-            alert("Failed to load Razorpay script");
+            alert("Failed to load checkout script");
             return;
         }
 
         const options = {
-            key: 'rzp_test_GcZZFDPP0jHtC4', // Your Razorpay key
-            amount: amount,
+            key: 'rzp_test_GcZZFDPP0jHtC4',
+            amount: amount * 100,
             currency: 'INR',
-            name: "Group Payment",
-            description: "Payment for group contribution",
+            name: "ShopSphere",
+            description: "Checkout Payment",
             handler: function (response) {
                 setResponseId(response.razorpay_payment_id);
-                alert("Payment successful: " + response.razorpay_payment_id);
+                alert("Payment successful! ID: " + response.razorpay_payment_id);
+                setCartCourses([]);
             },
             prefill: {
-                name: "User",
-                email: "user@example.com",
+                name: loggedUser ? loggedUser.name : "User",
+                email: loggedUser ? loggedUser.email : "user@example.com",
             },
-            theme: {
-                color: "#F4C430",
-            },
+            theme: { color: "#ff6b6b" },
         };
 
         const paymentObject = new window.Razorpay(options);
@@ -77,7 +82,6 @@ function App() {
     };
 
     const totalAmountCalculationFunction = () => {
-        // Calculate the total without any discount
         return cartCourses.reduce((total, item) => total + item.product.price * item.quantity, 0);
     };
 
@@ -85,31 +89,25 @@ function App() {
         const totalAmount = totalAmountCalculationFunction();
         if (totalAmount > 0) {
             createRazorpayOrder(totalAmount);
-        } else {
-            alert("Cart is empty!");
         }
     };
 
-    const addCourseToCartFunction = (GFGcourse) => {
-        const alreadyCourses = cartCourses.find(item => item.product.id === GFGcourse.id);
-        if (alreadyCourses) {
-            const latestCartUpdate = cartCourses.map(item =>
-                item.product.id === GFGcourse.id ? { ...item, quantity: item.quantity + 1 } : item
-            );
-            setCartCourses(latestCartUpdate);
+    const addCourseToCartFunction = (product) => {
+        const itemExists = cartCourses.find(item => item.product.id === product.id);
+        if (itemExists) {
+            setCartCourses(cartCourses.map(item =>
+                item.product.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+            ));
         } else {
-            setCartCourses([...cartCourses, { product: GFGcourse, quantity: 1 }]);
+            setCartCourses([...cartCourses, { product, quantity: 1 }]);
         }
     };
 
-    const deleteCourseFromCartFunction = (GFGCourse) => {
-        const updatedCart = cartCourses.filter(item => item.product.id !== GFGCourse.id);
-        setCartCourses(updatedCart);
+    const deleteCourseFromCartFunction = (product) => {
+        setCartCourses(cartCourses.filter(item => item.product.id !== product.id));
     };
 
-    const courseSearchUserFunction = (event) => {
-        setSearchCourse(event.target.value);
-    };
+    const courseSearchUserFunction = (event) => setSearchCourse(event.target.value);
 
     const filterCourseFunction = courses.filter((course) =>
         course.name.toLowerCase().includes(searchCourse.toLowerCase())
@@ -118,36 +116,54 @@ function App() {
     return (
         <Router>
             <div className="App">
-                <nav>
-                    <Link to="/">Home</Link>
-                    <Link to="/login">Login</Link>
+                <nav className="navbar">
+                    <div className="nav-brand">
+                        <Link to="/">🛍️ ShopSphere</Link>
+                    </div>
+                    <div className="nav-links">
+                        {loggedUser && (
+                            <div className="user-menu">
+                                <span>Hello, {loggedUser.name}</span>
+                                <button className="logout-btn" onClick={handleLogout}>Logout</button>
+                            </div>
+                        )}
+                    </div>
                 </nav>
-                <Routes>
-                    <Route path="/login" element={<LoginComponent />} />
-                    <Route path="/" element={
-                        <>
-                            <SearchComponent
-                                searchCourse={searchCourse}
-                                courseSearchUserFunction={courseSearchUserFunction}
-                            />
-                            <main className="App-main">
-                                <ShowCourseComponent
-                                    courses={courses}
-                                    filterCourseFunction={filterCourseFunction}
-                                    addCourseToCartFunction={addCourseToCartFunction}
-                                />
-                                <UserCartComponent
-                                    cartCourses={cartCourses}
-                                    deleteCourseFromCartFunction={deleteCourseFromCartFunction}
-                                    totalAmountCalculationFunction={totalAmountCalculationFunction}
-                                    setCartCourses={setCartCourses}
-                                    handlePayment={handlePayment} // Pass handlePayment to UserCartComponent
-                                />
-                            </main>
-                            {responseId && <p>Payment ID: {responseId}</p>}
-                        </>
-                    } />
-                </Routes>
+                <div className="main-content-wrapper">
+                    <Routes>
+                        <Route path="/login" element={
+                            loggedUser ? <Navigate to="/" replace /> : <LoginComponent setLoggedUser={setLoggedUser} />
+                        } />
+                        <Route path="/" element={
+                            loggedUser ? (
+                                <>
+                                    <SearchComponent
+                                        searchCourse={searchCourse}
+                                        courseSearchUserFunction={courseSearchUserFunction}
+                                    />
+                                    <main className={`App-main ${cartCourses.length === 0 ? 'empty-cart-layout' : ''}`}>
+                                        <ShowCourseComponent
+                                            courses={courses}
+                                            filterCourseFunction={filterCourseFunction}
+                                            addCourseToCartFunction={addCourseToCartFunction}
+                                        />
+                                        {cartCourses.length > 0 && (
+                                            <UserCartComponent
+                                                cartCourses={cartCourses}
+                                                deleteCourseFromCartFunction={deleteCourseFromCartFunction}
+                                                totalAmountCalculationFunction={totalAmountCalculationFunction}
+                                                setCartCourses={setCartCourses}
+                                                handlePayment={handlePayment}
+                                            />
+                                        )}
+                                    </main>
+                                </>
+                            ) : (
+                                <Navigate to="/login" replace />
+                            )
+                        } />
+                    </Routes>
+                </div>
             </div>
         </Router>
     );
