@@ -8,12 +8,18 @@ import SearchComponent from './components/SearchComponent';
 import ShowCourseComponent from './components/ShowCourseComponent';
 import UserCartComponent from './components/UserCartComponent';
 import LoginComponent from './components/LoginComponent';
+import CheckoutModalComponent from './components/CheckoutModalComponent';
 
 function App() {
     const [courses] = useState([
         { id: 1, name: 'Premium T-shirt', price: 499, image: tshirtImage, description: 'Comfortable premium cotton t-shirt.' },
         { id: 2, name: 'Travel Bag', price: 899, image: Bag, description: 'Spacious and durable travel backpack.' },
-        { id: 3, name: 'Running Shoes', price: 1299, image: shoes, description: 'Performance running shoes with great grip.' }
+        { id: 3, name: 'Running Shoes', price: 1299, image: shoes, description: 'Performance running shoes with great grip.' },
+        { id: 4, name: 'Classic Denim Jacket', price: 1999, image: tshirtImage, description: 'Timeless denim jacket for every season.' },
+        { id: 5, name: 'Leather Wallet', price: 399, image: Bag, description: 'Sleek genuine leather wallet with RFID.' },
+        { id: 6, name: 'Sports Sneakers', price: 1499, image: shoes, description: 'Lightweight sneakers for maximum comfort.' },
+        { id: 7, name: 'Cotton Hoodie', price: 899, image: tshirtImage, description: 'Warm and cozy hoodie for winter.' },
+        { id: 8, name: 'Hiking Backpack', price: 2499, image: Bag, description: 'Waterproof bag for outdoor hiking.' }
     ]);
     
     const [cartCourses, setCartCourses] = useState(() => {
@@ -28,6 +34,8 @@ function App() {
         return savedUser ? JSON.parse(savedUser) : null;
     });
 
+    const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+
     useEffect(() => {
         localStorage.setItem('shopping_cart', JSON.stringify(cartCourses));
     }, [cartCourses]);
@@ -37,48 +45,6 @@ function App() {
         setLoggedUser(null);
     };
 
-    const loadScript = (src) => {
-        return new Promise((resolve) => {
-            const script = document.createElement("script");
-            script.src = src;
-            script.onload = () => resolve(true);
-            script.onerror = () => resolve(false);
-            document.body.appendChild(script);
-        });
-    };
-
-    const createRazorpayOrder = async (amount) => {
-        handleRazorpayScreen(amount);
-    };
-
-    const handleRazorpayScreen = async (amount) => {
-        const res = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
-        if (!res) {
-            alert("Failed to load checkout script");
-            return;
-        }
-
-        const options = {
-            key: 'rzp_test_GcZZFDPP0jHtC4',
-            amount: amount * 100,
-            currency: 'INR',
-            name: "ShopSphere",
-            description: "Checkout Payment",
-            handler: function (response) {
-                alert("Payment successful! ID: " + response.razorpay_payment_id);
-                setCartCourses([]);
-            },
-            prefill: {
-                name: loggedUser ? loggedUser.name : "User",
-                email: loggedUser ? loggedUser.email : "user@example.com",
-            },
-            theme: { color: "#ff6b6b" },
-        };
-
-        const paymentObject = new window.Razorpay(options);
-        paymentObject.open();
-    };
-
     const totalAmountCalculationFunction = () => {
         return cartCourses.reduce((total, item) => total + item.product.price * item.quantity, 0);
     };
@@ -86,8 +52,13 @@ function App() {
     const handlePayment = () => {
         const totalAmount = totalAmountCalculationFunction();
         if (totalAmount > 0) {
-            createRazorpayOrder(totalAmount);
+            setIsCheckoutOpen(true);
         }
+    };
+
+    const handleCheckoutSuccess = () => {
+        setCartCourses([]);
+        setIsCheckoutOpen(false);
     };
 
     const addCourseToCartFunction = (product) => {
@@ -155,6 +126,13 @@ function App() {
                                             />
                                         )}
                                     </main>
+                                    {isCheckoutOpen && (
+                                        <CheckoutModalComponent 
+                                            amount={totalAmountCalculationFunction()} 
+                                            onClose={() => setIsCheckoutOpen(false)}
+                                            onSuccess={handleCheckoutSuccess}
+                                        />
+                                    )}
                                 </>
                             ) : (
                                 <Navigate to="/login" replace />
