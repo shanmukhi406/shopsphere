@@ -14,12 +14,7 @@ function App() {
     const [courses] = useState([
         { id: 1, name: 'Premium T-shirt', price: 499, image: tshirtImage, description: 'Comfortable premium cotton t-shirt.' },
         { id: 2, name: 'Travel Bag', price: 899, image: Bag, description: 'Spacious and durable travel backpack.' },
-        { id: 3, name: 'Running Shoes', price: 1299, image: shoes, description: 'Performance running shoes with great grip.' },
-        { id: 4, name: 'Classic Denim Jacket', price: 1999, image: tshirtImage, description: 'Timeless denim jacket for every season.' },
-        { id: 5, name: 'Leather Wallet', price: 399, image: Bag, description: 'Sleek genuine leather wallet with RFID.' },
-        { id: 6, name: 'Sports Sneakers', price: 1499, image: shoes, description: 'Lightweight sneakers for maximum comfort.' },
-        { id: 7, name: 'Cotton Hoodie', price: 899, image: tshirtImage, description: 'Warm and cozy hoodie for winter.' },
-        { id: 8, name: 'Hiking Backpack', price: 2499, image: Bag, description: 'Waterproof bag for outdoor hiking.' }
+        { id: 3, name: 'Running Shoes', price: 1299, image: shoes, description: 'Performance running shoes with great grip.' }
     ]);
     
     const [cartCourses, setCartCourses] = useState(() => {

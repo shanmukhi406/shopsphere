@@ -551,25 +551,28 @@ body {
 .pay-now-btn {
   width: 100%;
   padding: 1.2rem;
-  background: linear-gradient(90deg, #2b2d42, #141526);
+  background: linear-gradient(135deg, #ff6b6b, #ff4a4a);
   border: none;
   border-radius: 12px;
   color: white;
-  font-size: 1.2rem;
-  font-weight: 600;
+  font-size: 1.3rem;
+  font-weight: 700;
   font-family: inherit;
   cursor: pointer;
   margin-top: 1rem;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
 }
 
 .pay-now-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(43, 45, 66, 0.3);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 12px 25px rgba(255, 107, 107, 0.5);
+  background: linear-gradient(135deg, #ff8e53, #ff4a4a);
 }
 
 .pay-now-btn:disabled {
-  background: #888;
+  background: #ccc;
+  box-shadow: none;
   cursor: not-allowed;
 }
 
