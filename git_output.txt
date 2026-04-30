@@ -1,0 +1,22 @@
+
+D:\ReactApplications\shoppingcart>git init 
+Reinitialized existing Git repository in D:/ReactApplications/shoppingcart/.git/
+
+D:\ReactApplications\shoppingcart>git add . 
+
+D:\ReactApplications\shoppingcart>git commit -m "first commit" 
+[main 90f1d2b] first commit
+ 2 files changed, 7 insertions(+)
+ create mode 100644 git_output.txt
+ create mode 100644 run_git.cmd
+
+D:\ReactApplications\shoppingcart>git branch -M main 
+
+D:\ReactApplications\shoppingcart>git remote remove origin 
+
+D:\ReactApplications\shoppingcart>git remote add origin https://github.com/shanmukhi406/shopsphere.git 
+
+D:\ReactApplications\shoppingcart>git push -u origin main 
+branch 'main' set up to track 'origin/main'.
+To https://github.com/shanmukhi406/shopsphere.git
+ * [new branch]      main -> main

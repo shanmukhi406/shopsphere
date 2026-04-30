@@ -10,7 +10,6 @@ import UserCartComponent from './components/UserCartComponent';
 import LoginComponent from './components/LoginComponent';
 
 function App() {
-    const [responseId, setResponseId] = useState("");
     const [courses] = useState([
         { id: 1, name: 'Premium T-shirt', price: 499, image: tshirtImage, description: 'Comfortable premium cotton t-shirt.' },
         { id: 2, name: 'Travel Bag', price: 899, image: Bag, description: 'Spacious and durable travel backpack.' },
@@ -66,7 +65,6 @@ function App() {
             name: "ShopSphere",
             description: "Checkout Payment",
             handler: function (response) {
-                setResponseId(response.razorpay_payment_id);
                 alert("Payment successful! ID: " + response.razorpay_payment_id);
                 setCartCourses([]);
             },
